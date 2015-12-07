@@ -3,10 +3,10 @@
 #include "intervals.h"
 #include <TimerObject.h>
 
-// constants won't change. They're used here to 
-// set pin numbers:
-const int primaryButtonPin = 2;     // the number of the pushbutton pin
-const int secondaryButtonPin = 4;
+// Constants won't change.
+// They're used here to set pin numbers:
+const int primaryButtonPin = 2;    // Starts/Stops primaryTimer
+const int secondaryButtonPin = 4;  // Adjusts M
 const int ledPin =  13;      // the number of the LED pin
 const int speakerPin = 8;
 
@@ -64,7 +64,7 @@ void playSong() {
 void updateCountdown(){
   //Serial.println("Updating countdown notification...");
   if(primaryTimer->isEnabled()) {
-    timeRemaining = intervals[currentInterval] - primaryTimer->getCurrentTime();
+    long timeRemaining = intervals[currentInterval] - primaryTimer->getCurrentTime();
     Serial.print("Time Remaining: ");
     Serial.print(timeRemaining/1000, DEC);
     Serial.print(" seconds");
@@ -83,7 +83,7 @@ void setup() {
   primaryTimer->setSingleShot(true);
   primaryTimer->setEnabled(false);
 
-  //Secondard timer holds a reporting timer for timed output while the primaryTimer is running.
+  //Secondard timer polls the primaryTimer for updates while the primaryTimer is running.
   secondaryTimer->setSingleShot(false);
   secondaryTimer->setOnTimer(&updateCountdown);
   secondaryTimer->setEnabled(true);
@@ -130,11 +130,7 @@ void loop(){
   if(! secondaryButtonState == lastSecondaryButtonState){
     //If the primaryTimer is running then we ignore the secondary button...
     if(primaryTimer->isEnabled() == false) {
-      if (secondaryButtonState == HIGH) { 
-        Serial.println("Secondary Button Pressed...");
-        Serial.print("Current Interval: ");
-        Serial.print(currentInterval, DEC);
-        Serial.println();
+      if (secondaryButtonState == HIGH) {
         //Index out of bounds check...
         if((currentInterval+1) > intervalSize) {
            currentInterval = 0;
@@ -142,7 +138,7 @@ void loop(){
            currentInterval = currentInterval + 1;
           
         }     
-        Serial.print("Timer Interval: ");
+        Serial.print("New Timer Interval: ");
         Serial.print(intervals[currentInterval], DEC);
         Serial.println();
       }
